@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Recipes &mdash; dendro_demo v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="dendro_demo v0.1 documentation" href="index.html" />
+    <link rel="prev" title="Dendrogram Generation with C++" href="cpp.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cpp.html" title="Dendrogram Generation with C++"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">dendro_demo v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="recipes">
+<h1>Recipes<a class="headerlink" href="#recipes" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<div class="section" id="dendrogram-indexes">
+<span id="index-recipes"></span><h2>Dendrogram Indexes<a class="headerlink" href="#dendrogram-indexes" title="Permalink to this headline">¶</a></h2>
+<p>The dendrogram algorithm segments data into nested structures. Each
+structure is given a unique integer identifier. The following routines
+help to navigate these indices.</p>
+<div class="section" id="leafward-mergers">
+<h3>Leafward Mergers<a class="headerlink" href="#leafward-mergers" title="Permalink to this headline">¶</a></h3>
+<p>The leafward mergers of structure <tt class="docutils literal"><span class="pre">i</span></tt> all the sub-trees of structure <tt class="docutils literal"><span class="pre">i</span></tt>.
+Each leafward merger passes through structure <tt class="docutils literal"><span class="pre">i</span></tt> when traveling to the
+root. Each leafward merger represents a substructure within structure <tt class="docutils literal"><span class="pre">i</span></tt>.</p>
+<p>Find the IDs of the leafward mergers of structure 60 (Note that 60 is included in the output):</p>
+<div class="highlight-python"><pre>print, leafward_mergers(60, (*ptr).clusters)
+          60          15          56          55          20          22          53          52          25          51
+          27          30          50          49          26          29          33</pre>
+</div>
+<img alt="_images/dendrogram_tutorial_leafward.png" class="align-center" src="_images/dendrogram_tutorial_leafward.png" />
+<div class="figure align-center" style="width: 400px">
+<img alt="_images/dendrogram_tutorial_leafward_picture.png" src="_images/dendrogram_tutorial_leafward_picture.png" />
+<p class="caption">Partial dendrogram centered on structure 60, showing the first few leafward mergers.</p>
+</div>
+<p>To find the two immediate substructures that merge to form structure 60, use the <tt class="docutils literal"><span class="pre">/parents</span></tt> keyword:</p>
+<div class="highlight-python"><pre>IDL&gt; print, leafward_mergers(60, (*ptr).clusters, /parents)
+     56          15</pre>
+</div>
+<img alt="_images/dendrogram_tutorial_leafward_parent.png" class="align-center" src="_images/dendrogram_tutorial_leafward_parent.png" />
+</div>
+<div class="section" id="rootward-mergers">
+<h3>Rootward Mergers<a class="headerlink" href="#rootward-mergers" title="Permalink to this headline">¶</a></h3>
+<p>Rootward mergers are opposite leafward mergers. They represent
+superstructures, or trees that a given node is nested inside.</p>
+<p>Rootward mergers of 60:</p>
+<div class="highlight-python"><pre>IDL&gt; print, rootward_mergers(60, (*ptr).clusters)
+     60           61</pre>
+</div>
+<div class="figure align-center" style="width: 200px">
+<img alt="_images/dendrogram_tutorial_rootward.png" src="_images/dendrogram_tutorial_rootward.png" />
+<p class="caption">The rootward mergers of struture 60.</p>
+</div>
+<img alt="_images/dendrogram_tutorial_rootward_picture.png" class="align-center" src="_images/dendrogram_tutorial_rootward_picture.png" />
+</div>
+<div class="section" id="siblings">
+<h3>Siblings<a class="headerlink" href="#siblings" title="Permalink to this headline">¶</a></h3>
+<p>The structure that structure 60 eventually merges with:</p>
+<div class="highlight-python"><pre>IDL&gt; print, merger_partner(60, (*ptr).clusters)
+      59</pre>
+</div>
+<p>The structure that defines the merger of structure 59 and 60:</p>
+<div class="highlight-python"><pre>IDL&gt; partner = merger_partner(60, (*ptr).clusters, merge = m)
+IDL&gt; print, m
+      61</pre>
+</div>
+</div>
+<div class="section" id="mapping-between-indices-and-pixels">
+<h3>Mapping between indices and pixels<a class="headerlink" href="#mapping-between-indices-and-pixels" title="Permalink to this headline">¶</a></h3>
+<p>Use the substruct function to extract which pixels belong to each dendrogram structure.</p>
+<p>Find the indices (in the flattened x/y/v/t arrays) of the pixels belonging to structure 60:</p>
+<div class="highlight-python"><pre>IDL&gt; ind = substruct(60, ptr)
+IDL&gt; help, ind
+&lt;Expression&gt;    LONG      = Array[3195]
+IDL&gt; intensities = (*ptr).t[ind]
+IDL&gt; xpos = (*ptr).x[ind]
+IDL&gt; ypos = (*ptr).y[ind]</pre>
+</div>
+<p>Find only the pixels that belong to structure 60, but none of its substructures (i.e., a slice of the onion):</p>
+<div class="highlight-python"><pre>IDL&gt; help, substruct(60, ptr, /single)
+&lt;Expression&gt;    LONG      = Array[262]</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">In the IDL dendrogram implmentation, the x,y,v values <strong>do not</strong> always correspond to the pixel locations in the original data (they are occasionally offset by a few pixels). While this is not the case for C++-generated dendrograms, you shouldn&#8217;t rely on using the x/y/v values to index into the original data. Instead, use <tt class="docutils literal"><span class="pre">cube_indices</span> <span class="pre">=</span> <span class="pre">(*ptr).cubeindex[ind]</span></tt>. This gives the (1D) indices into the original data</p>
+</div>
+<p>Here&#8217;s an example of how <strong>not</strong> to index into the original cube (see warning above):</p>
+<div class="highlight-python"><pre>IDL&gt; print, im[xpos[0:3], ypos[0:3], zpos[0:3]]
+  7.48933      8.81364      10.1202      6.45180
+IDL&gt; print, intensities[0:3]
+   6.66389      6.71393      6.73340      6.74873  ;- DOES NOT MATCH!</pre>
+</div>
+<p>And the proper way:</p>
+<div class="highlight-python"><pre>IDL&gt; ci = (*ptr).cubeindex[ind]
+IDL&gt; print im[ci[0:3]]
+   6.66389      6.71393      6.73340      6.74873
+IDL&gt; print, intensities[0:3]
+   6.66389      6.71393      6.73340      6.74873 ;- matches.</pre>
+</div>
+</div>
+</div>
+<div class="section" id="plotting">
+<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h2>
+<p>Get a set of (x,y) points to plot a dendrogram:</p>
+<div class="highlight-python"><pre>IDL&gt; root = dendro_root(ptr)  ;- grabs the ID of the dendrogram base
+IDL&gt; xy = dplot_xy(ptr, root) ;- draw from the root
+IDL&gt; plot, xy[0,*], xy[1,*]</pre>
+</div>
+<a class="reference internal image-reference" href="_images/default_plot.png"><img alt="_images/default_plot.png" class="align-center" src="_images/default_plot.png" style="width: 360.0px; height: 225.0px;" /></a>
+<p>The height of each vertical line is the intensity value at which the two
+branches above it merge. The height of each leaf is the peak intensity of that leaf. The x ordering is arbitrary (see next section).</p>
+<div class="section" id="re-ordering">
+<h3>Re-ordering<a class="headerlink" href="#re-ordering" title="Permalink to this headline">¶</a></h3>
+<p>You can re-sort the dendrogram using <tt class="docutils literal"><span class="pre">dendro_sort</span></tt>. For example, to sort the dendrogram structure such that the left subtree of any node has an integrated intensity less than the right subtree:</p>
+<div class="highlight-python"><pre>IDL&gt; dendro_sort, ptr, /inten
+IDL&gt; xy = dplot_xy(ptr, root)
+IDL&gt; plot, xy[0,*], xy[1,*]</pre>
+</div>
+<a class="reference internal image-reference" href="_images/sort_inten_plot.png"><img alt="_images/sort_inten_plot.png" class="align-center" src="_images/sort_inten_plot.png" style="width: 360.0px; height: 225.0px;" /></a>
+<p><tt class="docutils literal"><span class="pre">dendro_sort</span></tt> also supports sorting based on the height of the tallest leaf in each subtree (i.e. the peak intensity of each substructure) via the <tt class="docutils literal"><span class="pre">/height</span></tt> option.</p>
+<div class="section" id="user-defined-ordering">
+<h4>User-defined ordering<a class="headerlink" href="#user-defined-ordering" title="Permalink to this headline">¶</a></h4>
+<p><tt class="docutils literal"><span class="pre">dendro_sort</span></tt> accepts a keyword, <tt class="docutils literal"><span class="pre">key</span></tt>, to support user-defined orderings. This should be an array, whose size is the number of structures in the dendrogram. The dendrogram will be sorted such that the left subtree of any node will have an associated key value less than the right subtree. For example, to re-implement the functionality of the <tt class="docutils literal"><span class="pre">/height</span></tt> keyword:</p>
+<div class="highlight-python"><pre>function height_key(ptr)
+    nst = n_elements((*ptr).height)
+    result = fltarr(nst)
+    for i = 0, nst - 1 do begin
+       result[i] = max( (*ptr).t[substruct(i, ptr)], /nan)
+    return, result
+
+ IDL&gt; keys = height_key(ptr)
+ IDL&gt; dendro_sort, ptr, key = keys</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="analysis">
+<h2>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h2>
+<p>The low-level routines described in the <a class="reference internal" href="#index-recipes"><em>Dendrogram Indexes</em></a> section can be used to extract and measure properties of each substructure.</p>
+<p>The dendro_catalog function measures some common information:</p>
+<div class="highlight-python"><pre>IDL&gt; catalog = dendro_catalog(ptr)
+IDL&gt; help, catalog, /struct
+** Structure &lt;2dc78d8&gt;, 16 tags, length=64, data length=64, refs=1:
+   X               FLOAT           109.922
+   Y               FLOAT           7.59273
+   V               FLOAT           0.00000
+   SIG_MAJ         FLOAT           8.83641
+   SIG_MIN         FLOAT           2.96764
+   SIG_V           FLOAT           0.00000
+   SIG_R           FLOAT           5.12087
+   AREA_MASK       FLOAT           265.000
+   PERIMETER_MASK  FLOAT           93.8909
+   FLUX            FLOAT           639.349
+   PEAK_INTEN      FLOAT           5.92300
+   VOL             FLOAT           265.000
+   VIRIAL          FLOAT           0.00000
+   SHOULDER_HEIGHT FLOAT           3.88697
+   VOL_LEFT        FLOAT               NaN
+   VOL_RIGHT       FLOAT               NaN</pre>
+</div>
+<p>The function creates an array of structures, one for each dendrogram structure. The fields of this structure are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="docutils literal"><span class="pre">x</span></tt>: Intensity-weighted mean x position</li>
+<li><tt class="docutils literal"><span class="pre">y</span></tt>: Intensity-weighted mean y position</li>
+<li><tt class="docutils literal"><span class="pre">v</span></tt>: Intensity-weighted mean v position</li>
+<li><tt class="docutils literal"><span class="pre">sig_maj</span></tt>: Semimajor axis of an ellipsoid approximation to the structure&#8217;s projection in the x/y plane</li>
+<li><tt class="docutils literal"><span class="pre">sig_min</span></tt>: Semiminor axis of ellispe described above</li>
+<li><tt class="docutils literal"><span class="pre">sig_v</span></tt>: RMS dispersion in velocity</li>
+<li><tt class="docutils literal"><span class="pre">sig_r</span></tt>: sqrt(sig_maj * sig_min)</li>
+<li><tt class="docutils literal"><span class="pre">area_mask</span></tt>: Number of pixels of the structure&#8217;s 2D projection</li>
+<li><tt class="docutils literal"><span class="pre">perimeter_mask</span></tt>: Perimeter of this projection</li>
+<li><tt class="docutils literal"><span class="pre">flux</span></tt>: Sum of intensities for all pixels inside the structure</li>
+<li><tt class="docutils literal"><span class="pre">peak_inten</span></tt>: Maximum intensity inside the structure</li>
+<li><tt class="docutils literal"><span class="pre">vol</span></tt>: Number of pixels inside the structure</li>
+<li><tt class="docutils literal"><span class="pre">virial</span></tt>: Virial parameter (see note below)</li>
+<li><tt class="docutils literal"><span class="pre">shoulder_height</span></tt>: Height of the vertical line connecting this structure to its merger in a dendrogram plot</li>
+<li><tt class="docutils literal"><span class="pre">vol_left</span></tt>: Volume of left subtree</li>
+<li><tt class="docutils literal"><span class="pre">vol_right</span></tt>: Volume of right subtree</li>
+</ul>
+</div></blockquote>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">dendro_catalog works in pixel units by default. The optional <tt class="docutils literal"><span class="pre">len_scale</span></tt> defines the linear scale of each pixel. If present, it will convert <tt class="docutils literal"><span class="pre">sig_maj</span></tt>, <tt class="docutils literal"><span class="pre">sig_min</span></tt>, and <tt class="docutils literal"><span class="pre">sig_r</span></tt> into physical units. <tt class="docutils literal"><span class="pre">vel_scale</span></tt> gives the velocity width of each channel, and will convert <tt class="docutils literal"><span class="pre">sig_v</span></tt> into physical units. <tt class="docutils literal"><span class="pre">flux2mass</span></tt> is a multiplicative factor to convert summed intensity into mass. It is used by <tt class="docutils literal"><span class="pre">virial</span></tt> (see next tip)</p>
+</div>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">The virial parameter is defined as <tt class="docutils literal"><span class="pre">5</span> <span class="pre">eta</span> <span class="pre">R</span> <span class="pre">v^2</span> <span class="pre">/</span> <span class="pre">(G</span> <span class="pre">M)</span></tt>, where <tt class="docutils literal"><span class="pre">eta</span> <span class="pre">=</span> <span class="pre">1.91</span></tt> (see Rosolowsky et al. 2008). M is calculated by multiplying the <tt class="docutils literal"><span class="pre">flux</span></tt> field by the optional <tt class="docutils literal"><span class="pre">flux2mass</span></tt> keyword, and <tt class="docutils literal"><span class="pre">G</span></tt> is given in CGS units. Thus, to get sensible units for this field, use <tt class="docutils literal"><span class="pre">len_scale</span></tt> to convert from pixels to cm, <tt class="docutils literal"><span class="pre">vel_scale</span></tt> to convert from velocity pixels to cm/s, and <tt class="docutils literal"><span class="pre">flux2mass</span></tt> to convert to g.</p>
+</div>
+<p>This routine depends on functions in the <a class="reference external" href="http://ifa.hawaii.edu/users/beaumont/code/">Beaumont IDL library</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Recipes</a><ul>
+<li><a class="reference internal" href="#dendrogram-indexes">Dendrogram Indexes</a><ul>
+<li><a class="reference internal" href="#leafward-mergers">Leafward Mergers</a></li>
+<li><a class="reference internal" href="#rootward-mergers">Rootward Mergers</a></li>
+<li><a class="reference internal" href="#siblings">Siblings</a></li>
+<li><a class="reference internal" href="#mapping-between-indices-and-pixels">Mapping between indices and pixels</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plotting">Plotting</a><ul>
+<li><a class="reference internal" href="#re-ordering">Re-ordering</a><ul>
+<li><a class="reference internal" href="#user-defined-ordering">User-defined ordering</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#analysis">Analysis</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cpp.html"
+                        title="previous chapter">Dendrogram Generation with C++</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cookbook.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cpp.html" title="Dendrogram Generation with C++"
+             >previous</a> |</li>
+        <li><a href="index.html">dendro_demo v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Chris Beaumont.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>
