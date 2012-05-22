@@ -11,8 +11,9 @@ The DendroDocs
    intro
    idl
    cpp
+   python
    cookbook
-
+   dendroviz
 
 * :ref:`genindex`
 * :ref:`search`
