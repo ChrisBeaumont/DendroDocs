@@ -18,12 +18,14 @@ help to navigate these indices.
 Leafward Mergers
 ................
 
-The leafward mergers of structure ``i`` all the sub-trees of structure ``i``.
-Each leafward merger passes through structure ``i`` when traveling to the
-root. Each leafward merger represents a substructure within structure ``i``.
+The leafward mergers of structure ``i`` are all the nodes in the
+sub-tree rooted at ``i``.  Each leafward merger passes through
+structure ``i`` when traveling to the root. Alternatively, any node
+that is visited on a trip from ``i`` to a leaf is a leafward merger of
+``i``.
 
 
-Find the IDs of the leafward mergers of structure 60 (Note that 60 is included in the output)::
+To find the IDs of the leafward mergers of structure 60 (Note that 60 is included in the output)::
 
      print, leafward_mergers(60, (*ptr).clusters)
                60          15          56          55          20          22          53          52          25          51
@@ -51,7 +53,7 @@ To find the two immediate substructures that merge to form structure 60, use the
 Rootward Mergers
 ................
 
-Rootward mergers are opposite leafward mergers. They represent
+Rootward mergers are the opposite of leafward mergers. They represent
 superstructures, or trees that a given node is nested inside.
 
 Rootward mergers of 60::
@@ -86,9 +88,11 @@ The structure that defines the merger of structure 59 and 60::
 Mapping between indices and pixels
 ..................................
 
-Use the substruct function to extract which pixels belong to each dendrogram structure.
+Use the substruct function to extract which pixels belong to each
+dendrogram structure.
 
-Find the indices (in the flattened x/y/v/t arrays) of the pixels belonging to structure 60::
+Find the indices (in the flattened x/y/v/t arrays) of the pixels
+belonging to structure 60::
 
      IDL> ind = substruct(60, ptr)
      IDL> help, ind
@@ -97,13 +101,20 @@ Find the indices (in the flattened x/y/v/t arrays) of the pixels belonging to st
      IDL> xpos = (*ptr).x[ind]
      IDL> ypos = (*ptr).y[ind]
 
-Find only the pixels that belong to structure 60, but none of its substructures (i.e., a slice of the onion)::
+Find only the pixels that belong to structure 60, but none of its
+substructures (i.e., a slice of the onion)::
 
      IDL> help, substruct(60, ptr, /single)
      <Expression>    LONG      = Array[262]
 
 .. WARNING::
-   In the IDL dendrogram implmentation, the x,y,v values **do not** always correspond to the pixel locations in the original data (they are occasionally offset by a few pixels). While this is not the case for C++-generated dendrograms, you shouldn't rely on using the x/y/v values to index into the original data. Instead, use ``cube_indices = (*ptr).cubeindex[ind]``. This gives the (1D) indices into the original data
+   In the IDL dendrogram implmentation, the x,y,v values **do not**
+   always correspond to the pixel locations in the original data (they
+   are occasionally offset by a few pixels). While this is not the
+   case for C++-generated dendrograms, you shouldn't rely on using the
+   x/y/v values to index into the original data. Instead, use
+   ``cube_indices = (*ptr).cubeindex[ind]``. This gives the (1D)
+   indices into the original data
 
 Here's an example of how **not** to index into the original cube (see warning above)::
 
@@ -155,7 +166,12 @@ You can re-sort the dendrogram using ``dendro_sort``. For example, to sort the d
 User-defined ordering
 _____________________
 
-``dendro_sort`` accepts a keyword, ``key``, to support user-defined orderings. This should be an array, whose size is the number of structures in the dendrogram. The dendrogram will be sorted such that the left subtree of any node will have an associated key value less than the right subtree. For example, to re-implement the functionality of the ``/height`` keyword::
+``dendro_sort`` accepts a keyword, ``key``, to support user-defined
+orderings. This should be an array, whose size is the number of
+structures in the dendrogram. The dendrogram will be sorted such that
+the left subtree of any node will have an associated key value less
+than the right subtree. For example, to re-implement the functionality
+of the ``/height`` keyword::
 
     function height_key(ptr)
         nst = n_elements((*ptr).height)
@@ -170,7 +186,8 @@ _____________________
 Analysis
 ********
 
-The low-level routines described in the :ref:`index_recipes` section can be used to extract and measure properties of each substructure.
+The low-level routines described in the :ref:`index_recipes` section
+can be used to extract and measure properties of each substructure.
 
 The dendro_catalog function measures some common information::
 
@@ -194,7 +211,8 @@ The dendro_catalog function measures some common information::
        VOL_LEFT        FLOAT               NaN
        VOL_RIGHT       FLOAT               NaN
 
-The function creates an array of structures, one for each dendrogram structure. The fields of this structure are:
+The function creates an array of structures, one for each dendrogram
+structure. The fields of this structure are:
 
  * ``x``: Intensity-weighted mean x position
  * ``y``: Intensity-weighted mean y position
@@ -214,9 +232,22 @@ The function creates an array of structures, one for each dendrogram structure. 
  * ``vol_right``: Volume of right subtree
 
 .. TIP::
-   dendro_catalog works in pixel units by default. The optional ``len_scale`` defines the linear scale of each pixel. If present, it will convert ``sig_maj``, ``sig_min``, and ``sig_r`` into physical units. ``vel_scale`` gives the velocity width of each channel, and will convert ``sig_v`` into physical units. ``flux2mass`` is a multiplicative factor to convert summed intensity into mass. It is used by ``virial`` (see next tip)
+   dendro_catalog works in pixel units by default. The optional
+   ``len_scale`` defines the linear scale of each pixel. If present,
+   it will convert ``sig_maj``, ``sig_min``, and ``sig_r`` into
+   physical units. ``vel_scale`` gives the velocity width of each
+   channel, and will convert ``sig_v`` into physical
+   units. ``flux2mass`` is a multiplicative factor to convert summed
+   intensity into mass. It is used by ``virial`` (see next tip)
 
 .. TIP::
-   The virial parameter is defined as ``5 eta R v^2 / (G M)``, where ``eta = 1.91`` (see Rosolowsky et al. 2008). M is calculated by multiplying the ``flux`` field by the optional ``flux2mass`` keyword, and ``G`` is given in CGS units. Thus, to get sensible units for this field, use ``len_scale`` to convert from pixels to cm, ``vel_scale`` to convert from velocity pixels to cm/s, and ``flux2mass`` to convert to g.
+   The virial parameter is defined as ``5 eta R v^2 / (G M)``, where
+   ``eta = 1.91`` (see Rosolowsky et al. 2008). M is calculated by
+   multiplying the ``flux`` field by the optional ``flux2mass``
+   keyword, and ``G`` is given in CGS units. Thus, to get sensible
+   units for this field, use ``len_scale`` to convert from pixels to
+   cm, ``vel_scale`` to convert from velocity pixels to cm/s, and
+   ``flux2mass`` to convert to g.
 
-This routine depends on functions in the `Beaumont IDL library <http://ifa.hawaii.edu/users/beaumont/code/>`_.
+This routine depends on functions in the `Beaumont IDL library
+<http://ifa.hawaii.edu/users/beaumont/code/>`_.
