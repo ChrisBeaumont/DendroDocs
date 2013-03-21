@@ -5,7 +5,7 @@ Dendrogram Generation with IDL
 
 There are currently several codes to generate dendrograms -- we are
 working on unifying these packages. For now, we will look at the
-original IDL code written by Erik Rosolowsky, available `here <http://svn.ok.ubc.ca/wsvn/signals/dendro/branch/cnb/?op=dl&rev=0&isdir=1>`_
+original IDL code written by Erik Rosolowsky, available `here <https://github.com/ChrisBeaumont/IDLdep>`_
 
 Make sure this is in your IDL path
 
@@ -116,4 +116,3 @@ Here's what some of these fields describe:
   relevant contour merger
 - xlocation : The xlocation of each structure, for plotting. At the
   moment, this carries no physical meaning.
-
