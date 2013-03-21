@@ -5,7 +5,7 @@ Dendrogram Generation with IDL
 
 There are currently several codes to generate dendrograms -- we are
 working on unifying these packages. For now, we will look at the
-original IDL code written by Erik Rosolowsky, available `here <https://github.com/ChrisBeaumont/IDLdep>`_
+original IDL code written by Erik Rosolowsky, available `here <https://github.com/ChrisBeaumont/dendro_idl>`_
 
 Make sure this is in your IDL path
 
